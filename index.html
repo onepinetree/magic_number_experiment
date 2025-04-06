@@ -17,19 +17,19 @@
       text-align: center; 
     }
     .section { 
-      padding: 20px; 
+      padding: 20px;
     }
     .settings { 
-      margin-bottom: 20px; 
+      margin-bottom: 20px;
     }
     .settings label { 
-      margin-right: 10px; 
+      margin-right: 10px;
     }
     .container { 
       display: flex; 
       flex-wrap: wrap; 
       gap: 20px; 
-      justify-content: center; 
+      justify-content: center;
     }
     
     /* 아이폰 UI 스타일 (왼쪽 패널) - 85% 크기로 축소 */
@@ -104,20 +104,26 @@
     </p>
     <p>
       실험은 다음과 같은 방식으로 진행됩니다:<br>
-      1. 상단에서 테스터의 이름, 청크 개수(한 라운드에 보여질 세트 수), 전체 실험 횟수를 선택합니다.<br>
-      2. 각 라운드는 왼쪽 패널(아이폰 화면처럼 디자인됨)에 해당 라운드의 청크(예: "청크 1: …", "청크 2: …")를 읽기 단계로 노출합니다.<br>
-      3. 오른쪽 패널에는 중앙에 "읽음, 퀴즈 시작" 버튼이 나타나며, 버튼을 누르거나 15초 후 자동으로 해당 청크에 대한 문제들이 제시됩니다.<br>
-      4. 각 문제는 객관식으로 제시되며, 15초 이내에 답변하지 않으면 자동으로 제출됩니다.<br>
-      5. 모든 라운드가 종료되면 각 라운드별 결과(총 청크 수 / 점수(%) / 테스터 이름)를 표 형식으로 확인할 수 있고, CSV로 저장할 수 있습니다.<br>
+      1. 상단에서 테스터의 이름과 청크 개수(한 라운드에 보여질 세트 수)를 선택합니다. (청크 개수는 2, 3, 4, 5, 6 중 선택)<br>
+      2. 실험은 총 30번 진행되며, 10번 진행 후 휴식 화면이 나타납니다.<br>
+      3. 각 라운드는 왼쪽 패널에 해당 라운드의 청크들이 표시되고, 오른쪽 패널에는 "읽음, 퀴즈 시작" 버튼이 나타납니다.<br>
+      4. 15초 동안 청크들을 읽은 후, 자동 또는 수동으로 퀴즈가 시작됩니다.<br>
+      5. 퀴즈에 15초 내에 답하지 않으면 자동 제출되며, 각 문제는 객관식으로 제시됩니다.<br>
+      6. 10번 진행 후 휴식 화면에서 "계속하기" 버튼을 클릭하면 다음 10번의 라운드가 진행됩니다.<br>
+      7. 모든 30번의 라운드가 종료되면 결과 화면이 나타납니다.
     </p>
     <div class="settings">
       <label for="testerName">테스터 이름:</label>
       <input type="text" id="testerName" placeholder="이름을 입력하세요">
       <br><br>
       <label for="chunkCount">청크 개수:</label>
-      <input type="number" id="chunkCount" min="1" value="2">
-      <label for="experimentCount">실험 횟수:</label>
-      <input type="number" id="experimentCount" min="1" value="2">
+      <select id="chunkCount">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
     </div>
     <button id="startExperiment">실험 시작</button>
   </div>
@@ -148,127 +154,1124 @@
     // raw_data를 객체 배열로 정의 (순서는 항상 동일)
     const rawData = 
     [
+      {
+        "chunk": "오늘 남은 할 일 : 3개",
+        "question": "오늘 남은 할 일 : ( )",
+        "options": ["2개", "3개", "4개"],
+        "answer": "3개"
+      },
+      {
+        "chunk": "이번 달 총 걸음 수 : 84,000보",
+        "question": "이번 달 총 걸음 수 : ( )",
+        "options": ["64,000보", "84,000보", "104,000보"],
+        "answer": "84,000보"
+      },
+      {
+        "chunk": "최근 배송 상태 : 배송 완료",
+        "question": "최근 배송 상태 : ( )",
+        "options": ["배송 중", "배송 완료", "배송 준비"],
+        "answer": "배송 완료"
+      },
+      {
+        "chunk": "현재 잔액 : 12만 5천원",
+        "question": "현재 잔액 : ( )",
+        "options": ["11만 5천원", "12만 5천원", "13만 5천원"],
+        "answer": "12만 5천원"
+      },
+      {
+        "chunk": "다음 운동 : 요가",
+        "question": "다음 운동 : ( )",
+        "options": ["요가", "필라테스", "웨이트"],
+        "answer": "요가"
+      },
+      {
+        "chunk": "이번 주 소비 1위 카테고리 : 외식",
+        "question": "이번 주 소비 1위 카테고리 : ( )",
+        "options": ["의류", "외식", "교통"],
+        "answer": "외식"
+      },
+      {
+        "chunk": "예약된 병원 : 서울정형외과",
+        "question": "예약된 병원 : ( )",
+        "options": ["서울정형외과", "강남내과", "신촌피부과"],
+        "answer": "서울정형외과"
+      },
+      {
+        "chunk": "오늘 섭취한 단백질 : 72g",
+        "question": "오늘 섭취한 단백질 : ( )",
+        "options": ["52g", "72g", "92g"],
+        "answer": "72g"
+      },
+      {
+        "chunk": "가장 많이 쓴 브랜드 : 스타벅스",
+        "question": "가장 많이 쓴 브랜드 : ( )",
+        "options": ["스타벅스", "배달의민족", "쿠팡"],
+        "answer": "스타벅스"
+      },
+      {
+        "chunk": "최근 검색한 항공사 : 대한항공",
+        "question": "최근 검색한 항공사 : ( )",
+        "options": ["대한항공", "아시아나", "제주항공"],
+        "answer": "대한항공"
+      },
+      {
+        "chunk": "다음 약 복용 시간 : 오후 7시",
+        "question": "다음 약 복용 시간 : ( )",
+        "options": ["오후 6시", "오후 7시", "오후 8시"],
+        "answer": "오후 7시"
+      },
+      {
+        "chunk": "이번 주 최다 청취 앨범 : 뉴진스",
+        "question": "이번 주 최다 청취 앨범 : ( )",
+        "options": ["뉴진스", "르세라핌", "아이브"],
+        "answer": "뉴진스"
+      },
+      {
+        "chunk": "최근 본 뉴스 : 테슬라",
+        "question": "최근 본 뉴스 : ( )",
+        "options": ["애플", "테슬라", "삼성"],
+        "answer": "테슬라"
+      },
+      {
+        "chunk": "오늘 남은 물 섭취량 : 900ml",
+        "question": "오늘 남은 물 섭취량 : ( )",
+        "options": ["700ml", "900ml", "1100ml"],
+        "answer": "900ml"
+      },
+      {
+        "chunk": "다음 운동 예약 : 오후 8시",
+        "question": "다음 운동 예약 : ( )",
+        "options": ["오후 7시", "오후 8시", "오후 9시"],
+        "answer": "오후 8시"
+      },
+      {
+        "chunk": "최다 소비일 : 4월 3일",
+        "question": "최다 소비일 : ( )",
+        "options": ["4월 3일", "4월 7일", "4월 10일"],
+        "answer": "4월 3일"
+      },
+      {
+        "chunk": "가장 많이 사용한 앱 : 인스타그램",
+        "question": "가장 많이 사용한 앱 : ( )",
+        "options": ["인스타그램", "유튜브", "카카오톡"],
+        "answer": "인스타그램"
+      },
+      {
+        "chunk": "최근 도착한 택시 차량 : 모닝",
+        "question": "최근 도착한 택시 차량 : ( )",
+        "options": ["모닝", "쏘나타", "K7"],
+        "answer": "모닝"
+      },
+      {
+        "chunk": "최근 작성한 리뷰 점수 : 4점",
+        "question": "최근 작성한 리뷰 점수 : ( )",
+        "options": ["3점", "4점", "5점"],
+        "answer": "4점"
+      },
+      {
+        "chunk": "활성화된 알림 수 : 5개",
+        "question": "활성화된 알림 수 : ( )",
+        "options": ["3개", "5개", "7개"],
+        "answer": "5개"
+      },
+      {
+    "chunk": "이번 달 리워드 적립 : 3,200P",
+    "question": "이번 달 리워드 적립 : ( )",
+    "options": ["2,200P", "3,200P", "4,200P"],
+    "answer": "3,200P"
+  },
   {
-    "chunk": "오늘 남은 할 일 : 3개",
-    "question": "오늘 남은 할 일 : ( )",
+    "chunk": "다음 버스 도착 시간 : 12분",
+    "question": "다음 버스 도착 시간 : ( )",
+    "options": ["8분", "12분", "16분"],
+    "answer": "12분"
+  },
+  {
+    "chunk": "최근 촬영한 인바디 날짜 : 4월 4일",
+    "question": "최근 촬영한 인바디 날짜 : ( )",
+    "options": ["4월 2일", "4월 4일", "4월 6일"],
+    "answer": "4월 4일"
+  },
+  {
+    "chunk": "다음 청구일 : 4월 20일",
+    "question": "다음 청구일 : ( )",
+    "options": ["4월 15일", "4월 20일", "4월 25일"],
+    "answer": "4월 20일"
+  },
+  {
+    "chunk": "총 구독 중인 서비스 : 5개",
+    "question": "총 구독 중인 서비스 : ( )",
+    "options": ["4개", "5개", "6개"],
+    "answer": "5개"
+  },
+  {
+    "chunk": "최근 산 제품 : 무선 이어폰",
+    "question": "최근 산 제품 : ( )",
+    "options": ["무선 이어폰", "보조 배터리", "마우스"],
+    "answer": "무선 이어폰"
+  },
+  {
+    "chunk": "다음 예약 일정 : 4월 10일 오후 2시",
+    "question": "다음 예약 일정 : ( )",
+    "options": ["4월 10일 오후 2시", "4월 11일 오후 1시", "4월 12일 오후 3시"],
+    "answer": "4월 10일 오후 2시"
+  },
+  {
+    "chunk": "남은 데이터 : 2.3GB",
+    "question": "남은 데이터 : ( )",
+    "options": ["1.3GB", "2.3GB", "3.3GB"],
+    "answer": "2.3GB"
+  },
+  {
+    "chunk": "오늘 받은 알림 수 : 8개",
+    "question": "오늘 받은 알림 수 : ( )",
+    "options": ["6개", "8개", "10개"],
+    "answer": "8개"
+  },
+  {
+    "chunk": "평균 주행 거리 : 18km",
+    "question": "평균 주행 거리 : ( )",
+    "options": ["12km", "18km", "24km"],
+    "answer": "18km"
+  },
+  {
+    "chunk": "최근 완료한 챌린지 : 3일 연속 걷기",
+    "question": "최근 완료한 챌린지 : ( )",
+    "options": ["3일 연속 걷기", "일주일 단식", "5일 새벽 기상"],
+    "answer": "3일 연속 걷기"
+  },
+  {
+    "chunk": "저장된 배송지 수 : 4개",
+    "question": "저장된 배송지 수 : ( )",
+    "options": ["3개", "4개", "5개"],
+    "answer": "4개"
+  },
+  {
+    "chunk": "이번 주 운동 횟수 : 5회",
+    "question": "이번 주 운동 횟수 : ( )",
+    "options": ["4회", "5회", "6회"],
+    "answer": "5회"
+  },
+  {
+    "chunk": "최근 본 쇼핑 카테고리 : 캠핑용품",
+    "question": "최근 본 쇼핑 카테고리 : ( )",
+    "options": ["등산용품", "캠핑용품", "낚시용품"],
+    "answer": "캠핑용품"
+  },
+  {
+    "chunk": "오늘 소모한 칼로리 : 1,150kcal",
+    "question": "오늘 소모한 칼로리 : ( )",
+    "options": ["950kcal", "1,150kcal", "1,350kcal"],
+    "answer": "1,150kcal"
+  },
+  {
+    "chunk": "가장 많이 쓴 결제 수단 : 카카오페이",
+    "question": "가장 많이 쓴 결제 수단 : ( )",
+    "options": ["카카오페이", "신용카드", "네이버페이"],
+    "answer": "카카오페이"
+  },
+  {
+    "chunk": "최근 출석 체크 : 4일 연속",
+    "question": "최근 출석 체크 : ( )",
+    "options": ["3일 연속", "4일 연속", "5일 연속"],
+    "answer": "4일 연속"
+  },
+  {
+    "chunk": "예약한 PT 횟수 : 8회",
+    "question": "예약한 PT 횟수 : ( )",
+    "options": ["6회", "8회", "10회"],
+    "answer": "8회"
+  },
+  {
+    "chunk": "오늘 달린 거리 : 5.7km",
+    "question": "오늘 달린 거리 : ( )",
+    "options": ["4.7km", "5.7km", "6.7km"],
+    "answer": "5.7km"
+  },
+  {
+    "chunk": "이번 달 누적 소비 금액 : 87만원",
+    "question": "이번 달 누적 소비 금액 : ( )",
+    "options": ["77만원", "87만원", "97만원"],
+    "answer": "87만원"
+  },
+  {
+    "chunk": "다음 배송 예정일 : 4월 9일",
+    "question": "다음 배송 예정일 : ( )",
+    "options": ["4월 8일", "4월 9일", "4월 10일"],
+    "answer": "4월 9일"
+  },
+  {
+    "chunk": "최근 장바구니 추가 상품 : 접이식 테이블",
+    "question": "최근 장바구니 추가 상품 : ( )",
+    "options": ["접이식 테이블", "캠핑 체어", "코펠 세트"],
+    "answer": "접이식 테이블"
+  },
+  {
+    "chunk": "월간 누적 주행 거리 : 128km",
+    "question": "월간 누적 주행 거리 : ( )",
+    "options": ["108km", "128km", "148km"],
+    "answer": "128km"
+  },
+  {
+    "chunk": "지난 주 수면 점수 : 82점",
+    "question": "지난 주 수면 점수 : ( )",
+    "options": ["72점", "82점", "92점"],
+    "answer": "82점"
+  },
+  {
+    "chunk": "가장 오래 사용한 기기 : 갤럭시 워치",
+    "question": "가장 오래 사용한 기기 : ( )",
+    "options": ["갤럭시 워치", "에어팟", "핏빗"],
+    "answer": "갤럭시 워치"
+  },
+  {
+    "chunk": "오늘 총 스크린 타임 : 4시간 20분",
+    "question": "오늘 총 스크린 타임 : ( )",
+    "options": ["3시간 20분", "4시간 20분", "5시간 20분"],
+    "answer": "4시간 20분"
+  },
+  {
+    "chunk": "지난 달 총 소비 건수 : 43건",
+    "question": "지난 달 총 소비 건수 : ( )",
+    "options": ["33건", "43건", "53건"],
+    "answer": "43건"
+  },
+  {
+    "chunk": "최근 시청한 콘텐츠 : 블루아이",
+    "question": "최근 시청한 콘텐츠 : ( )",
+    "options": ["블루아이", "이상한 변호사 우영우", "더 글로리"],
+    "answer": "블루아이"
+  },
+  {
+    "chunk": "현재 보유 쿠폰 수 : 6장",
+    "question": "현재 보유 쿠폰 수 : ( )",
+    "options": ["4장", "6장", "8장"],
+    "answer": "6장"
+  },
+  {
+    "chunk": "최근 결제한 상점 : 올리브영",
+    "question": "최근 결제한 상점 : ( )",
+    "options": ["올리브영", "GS25", "쿠팡"],
+    "answer": "올리브영"
+  },
+  {
+    "chunk": "이번 주 집중 시간 : 17시간",
+    "question": "이번 주 집중 시간 : ( )",
+    "options": ["15시간", "17시간", "19시간"],
+    "answer": "17시간"
+  },
+  {
+    "chunk": "오늘 남은 운동 시간 : 25분",
+    "question": "오늘 남은 운동 시간 : ( )",
+    "options": ["15분", "25분", "35분"],
+    "answer": "25분"
+  },
+  {
+    "chunk": "최근 조회한 여행지 : 나트랑",
+    "question": "최근 조회한 여행지 : ( )",
+    "options": ["나트랑", "다낭", "코타키나발루"],
+    "answer": "나트랑"
+  },
+  {
+    "chunk": "마지막 송금 금액 : 135,000원",
+    "question": "마지막 송금 금액 : ( )",
+    "options": ["125,000원", "135,000원", "145,000원"],
+    "answer": "135,000원"
+  },
+  {
+    "chunk": "최근 반납한 도서 : 시간의 문",
+    "question": "최근 반납한 도서 : ( )",
+    "options": ["시간의 문", "달의 연대기", "종이 여자"],
+    "answer": "시간의 문"
+  },
+  {
+    "chunk": "예정된 심부름 수 : 2건",
+    "question": "예정된 심부름 수 : ( )",
+    "options": ["1건", "2건", "3건"],
+    "answer": "2건"
+  },
+  {
+    "chunk": "최근 찜한 카페 : 하프커피",
+    "question": "최근 찜한 카페 : ( )",
+    "options": ["하프커피", "펠트커피", "테일러커피"],
+    "answer": "하프커피"
+  },
+  {
+    "chunk": "주간 플로깅 횟수 : 3회",
+    "question": "주간 플로깅 횟수 : ( )",
+    "options": ["2회", "3회", "4회"],
+    "answer": "3회"
+  },
+  {
+    "chunk": "오늘 예약된 배달 수 : 1건",
+    "question": "오늘 예약된 배달 수 : ( )",
+    "options": ["1건", "2건", "3건"],
+    "answer": "1건"
+  },
+  {
+    "chunk": "최근 충전한 교통카드 금액 : 40,000원",
+    "question": "최근 충전한 교통카드 금액 : ( )",
+    "options": ["30,000원", "40,000원", "50,000원"],
+    "answer": "40,000원"
+  },
+  {
+    "chunk": "가장 많이 재생된 아티스트 : 잔나비",
+    "question": "가장 많이 재생된 아티스트 : ( )",
+    "options": ["잔나비", "아이유", "적재"],
+    "answer": "잔나비"
+  },
+  {
+    "chunk": "지난 주 누적 물 섭취량 : 8.4L",
+    "question": "지난 주 누적 물 섭취량 : ( )",
+    "options": ["7.4L", "8.4L", "9.4L"],
+    "answer": "8.4L"
+  },
+  {
+    "chunk": "이번 달 출석 일수 : 21일",
+    "question": "이번 달 출석 일수 : ( )",
+    "options": ["19일", "21일", "23일"],
+    "answer": "21일"
+  },
+  {
+    "chunk": "다음 영상 업로드 예정일 : 4월 11일",
+    "question": "다음 영상 업로드 예정일 : ( )",
+    "options": ["4월 10일", "4월 11일", "4월 12일"],
+    "answer": "4월 11일"
+  },
+  {
+    "chunk": "가장 오래된 거래 내역 : 2019년 5월",
+    "question": "가장 오래된 거래 내역 : ( )",
+    "options": ["2018년 5월", "2019년 5월", "2020년 5월"],
+    "answer": "2019년 5월"
+  },
+  {
+    "chunk": "현재 남은 마일리지 : 3,100점",
+    "question": "현재 남은 마일리지 : ( )",
+    "options": ["2,100점", "3,100점", "4,100점"],
+    "answer": "3,100점"
+  },
+  {
+    "chunk": "가장 자주 사용하는 카메라 앱 : 후지캠",
+    "question": "가장 자주 사용하는 카메라 앱 : ( )",
+    "options": ["후지캠", "노모", "카메라360"],
+    "answer": "후지캠"
+  },
+  {
+    "chunk": "최근 체크인한 장소 : 남산서울타워",
+    "question": "최근 체크인한 장소 : ( )",
+    "options": ["롯데타워", "남산서울타워", "63빌딩"],
+    "answer": "남산서울타워"
+  },
+  {
+    "chunk": "보관 중인 영수증 수 : 18건",
+    "question": "보관 중인 영수증 수 : ( )",
+    "options": ["16건", "18건", "20건"],
+    "answer": "18건"
+  },
+  {
+    "chunk": "이번 주 걸은 총 거리 : 31km",
+    "question": "이번 주 걸은 총 거리 : ( )",
+    "options": ["29km", "31km", "33km"],
+    "answer": "31km"
+  },
+  {
+    "chunk": "최근 등록한 카드 이름 : 하나머니카드",
+    "question": "최근 등록한 카드 이름 : ( )",
+    "options": ["삼성페이카드", "하나머니카드", "카카오뱅크카드"],
+    "answer": "하나머니카드"
+  },
+  {
+    "chunk": "최근 기록한 체중 : 63.4kg",
+    "question": "최근 기록한 체중 : ( )",
+    "options": ["61.4kg", "63.4kg", "65.4kg"],
+    "answer": "63.4kg"
+  },
+  {
+    "chunk": "다음 인증서 만료일 : 6월 18일",
+    "question": "다음 인증서 만료일 : ( )",
+    "options": ["6월 18일", "7월 18일", "8월 18일"],
+    "answer": "6월 18일"
+  },
+  {
+    "chunk": "주간 러닝 평균 속도 : 8.2km/h",
+    "question": "주간 러닝 평균 속도 : ( )",
+    "options": ["7.2km/h", "8.2km/h", "9.2km/h"],
+    "answer": "8.2km/h"
+  },
+  {
+    "chunk": "오늘 마신 커피 수 : 2잔",
+    "question": "오늘 마신 커피 수 : ( )",
+    "options": ["1잔", "2잔", "3잔"],
+    "answer": "2잔"
+  },
+  {
+    "chunk": "현재 사용 중인 요금제 : 스탠다드",
+    "question": "현재 사용 중인 요금제 : ( )",
+    "options": ["라이트", "스탠다드", "프리미엄"],
+    "answer": "스탠다드"
+  },
+  {
+    "chunk": "가장 많이 간 장소 : 합정역",
+    "question": "가장 많이 간 장소 : ( )",
+    "options": ["강남역", "합정역", "홍대입구"],
+    "answer": "합정역"
+  },
+  {
+    "chunk": "가장 많이 이용한 공유 킥보드 : 빔",
+    "question": "가장 많이 이용한 공유 킥보드 : ( )",
+    "options": ["씽씽", "빔", "디어"],
+    "answer": "빔"
+  },
+  {
+    "chunk": "다음 결제 예정 금액 : 27,900원",
+    "question": "다음 결제 예정 금액 : ( )",
+    "options": ["25,900원", "27,900원", "29,900원"],
+    "answer": "27,900원"
+  },
+  {
+    "chunk": "최근 등록한 기기 : 아이패드",
+    "question": "최근 등록한 기기 : ( )",
+    "options": ["맥북", "아이패드", "갤럭시탭"],
+    "answer": "아이패드"
+  },
+  {
+    "chunk": "현재 대기 중인 주문 수 : 2건",
+    "question": "현재 대기 중인 주문 수 : ( )",
+    "options": ["1건", "2건", "3건"],
+    "answer": "2건"
+  },
+  {
+    "chunk": "최근 로그인 위치 : 부산",
+    "question": "최근 로그인 위치 : ( )",
+    "options": ["서울", "부산", "대구"],
+    "answer": "부산"
+  },
+  {
+    "chunk": "오늘 도착 예정 택배 : 3개",
+    "question": "오늘 도착 예정 택배 : ( )",
     "options": ["2개", "3개", "4개"],
     "answer": "3개"
   },
   {
-    "chunk": "이번 달 총 걸음 수 : 84,000보",
-    "question": "이번 달 총 걸음 수 : ( )",
-    "options": ["64,000보", "84,000보", "104,000보"],
-    "answer": "84,000보"
+    "chunk": "가장 최근 받은 메시지 시간 : 오후 3시 42분",
+    "question": "가장 최근 받은 메시지 시간 : ( )",
+    "options": ["오후 3시 32분", "오후 3시 42분", "오후 3시 52분"],
+    "answer": "오후 3시 42분"
   },
   {
-    "chunk": "최근 배송 상태 : 배송 완료",
-    "question": "최근 배송 상태 : ( )",
-    "options": ["배송 중", "배송 완료", "배송 준비"],
-    "answer": "배송 완료"
+    "chunk": "현재 연결된 기기 수 : 4대",
+    "question": "현재 연결된 기기 수 : ( )",
+    "options": ["3대", "4대", "5대"],
+    "answer": "4대"
   },
   {
-    "chunk": "현재 잔액 : 12만 5천원",
-    "question": "현재 잔액 : ( )",
-    "options": ["11만 5천원", "12만 5천원", "13만 5천원"],
-    "answer": "12만 5천원"
+    "chunk": "지난 주 산책 횟수 : 6회",
+    "question": "지난 주 산책 횟수 : ( )",
+    "options": ["5회", "6회", "7회"],
+    "answer": "6회"
   },
   {
-    "chunk": "다음 운동 : 요가",
-    "question": "다음 운동 : ( )",
-    "options": ["요가", "필라테스", "웨이트"],
-    "answer": "요가"
+    "chunk": "가장 최근 작성한 메모 수 : 12개",
+    "question": "가장 최근 작성한 메모 수 : ( )",
+    "options": ["10개", "12개", "14개"],
+    "answer": "12개"
   },
   {
-    "chunk": "이번 주 소비 1위 카테고리 : 외식",
-    "question": "이번 주 소비 1위 카테고리 : ( )",
-    "options": ["의류", "외식", "교통"],
-    "answer": "외식"
+    "chunk": "가장 많이 본 광고 카테고리 : 전자제품",
+    "question": "가장 많이 본 광고 카테고리 : ( )",
+    "options": ["패션", "전자제품", "식품"],
+    "answer": "전자제품"
   },
   {
-    "chunk": "예약된 병원 : 서울정형외과",
-    "question": "예약된 병원 : ( )",
-    "options": ["서울정형외과", "강남내과", "신촌피부과"],
-    "answer": "서울정형외과"
+    "chunk": "최근 사용한 할인쿠폰 : 15%",
+    "question": "최근 사용한 할인쿠폰 : ( )",
+    "options": ["10%", "15%", "20%"],
+    "answer": "15%"
   },
   {
-    "chunk": "오늘 섭취한 단백질 : 72g",
-    "question": "오늘 섭취한 단백질 : ( )",
-    "options": ["52g", "72g", "92g"],
-    "answer": "72g"
-  },
-  {
-    "chunk": "가장 많이 쓴 브랜드 : 스타벅스",
-    "question": "가장 많이 쓴 브랜드 : ( )",
-    "options": ["스타벅스", "배달의민족", "쿠팡"],
-    "answer": "스타벅스"
-  },
-  {
-    "chunk": "최근 검색한 항공사 : 대한항공",
-    "question": "최근 검색한 항공사 : ( )",
-    "options": ["대한항공", "아시아나", "제주항공"],
-    "answer": "대한항공"
-  },
-  {
-    "chunk": "다음 약 복용 시간 : 오후 7시",
-    "question": "다음 약 복용 시간 : ( )",
-    "options": ["오후 6시", "오후 7시", "오후 8시"],
-    "answer": "오후 7시"
-  },
-  {
-    "chunk": "이번 주 최다 청취 앨범 : 뉴진스",
-    "question": "이번 주 최다 청취 앨범 : ( )",
-    "options": ["뉴진스", "르세라핌", "아이브"],
-    "answer": "뉴진스"
-  },
-  {
-    "chunk": "최근 본 뉴스 : 테슬라",
-    "question": "최근 본 뉴스 : ( )",
-    "options": ["애플", "테슬라", "삼성"],
-    "answer": "테슬라"
-  },
-  {
-    "chunk": "오늘 남은 물 섭취량 : 900ml",
-    "question": "오늘 남은 물 섭취량 : ( )",
-    "options": ["700ml", "900ml", "1100ml"],
-    "answer": "900ml"
-  },
-  {
-    "chunk": "다음 운동 예약 : 오후 8시",
-    "question": "다음 운동 예약 : ( )",
-    "options": ["오후 7시", "오후 8시", "오후 9시"],
-    "answer": "오후 8시"
-  },
-  {
-    "chunk": "최다 소비일 : 4월 3일",
-    "question": "최다 소비일 : ( )",
-    "options": ["4월 3일", "4월 7일", "4월 10일"],
-    "answer": "4월 3일"
-  },
-  {
-    "chunk": "가장 많이 사용한 앱 : 인스타그램",
-    "question": "가장 많이 사용한 앱 : ( )",
-    "options": ["인스타그램", "유튜브", "카카오톡"],
-    "answer": "인스타그램"
-  },
-  {
-    "chunk": "최근 도착한 택시 차량 : 모닝",
-    "question": "최근 도착한 택시 차량 : ( )",
-    "options": ["모닝", "쏘나타", "K7"],
-    "answer": "모닝"
-  },
-  {
-    "chunk": "최근 작성한 리뷰 점수 : 4점",
-    "question": "최근 작성한 리뷰 점수 : ( )",
-    "options": ["3점", "4점", "5점"],
-    "answer": "4점"
-  },
-  {
-    "chunk": "활성화된 알림 수 : 5개",
-    "question": "활성화된 알림 수 : ( )",
+    "chunk": "오늘 남은 일정 수 : 5개",
+    "question": "오늘 남은 일정 수 : ( )",
     "options": ["3개", "5개", "7개"],
     "answer": "5개"
+  },
+  {
+    "chunk": "최근 완료한 미션 : 리뷰 작성",
+    "question": "최근 완료한 미션 : ( )",
+    "options": ["퀴즈 참여", "리뷰 작성", "친구 초대"],
+    "answer": "리뷰 작성"
+  },
+  {
+    "chunk": "이번 달 목표 독서 권수 : 4권",
+    "question": "이번 달 목표 독서 권수 : ( )",
+    "options": ["3권", "4권", "5권"],
+    "answer": "4권"
+  },
+  {
+    "chunk": "가장 많이 들은 팟캐스트 : 우울한 책방",
+    "question": "가장 많이 들은 팟캐스트 : ( )",
+    "options": ["책읽는 라디오", "우울한 책방", "지대넓얕"],
+    "answer": "우울한 책방"
+  },
+  {
+    "chunk": "최근 받은 선물 수 : 2개",
+    "question": "최근 받은 선물 수 : ( )",
+    "options": ["1개", "2개", "3개"],
+    "answer": "2개"
+  },
+  {
+    "chunk": "남은 연차 일수 : 9일",
+    "question": "남은 연차 일수 : ( )",
+    "options": ["7일", "9일", "11일"],
+    "answer": "9일"
+  },
+  {
+    "chunk": "오늘 마지막 알람 시간 : 오전 9시 30분",
+    "question": "오늘 마지막 알람 시간 : ( )",
+    "options": ["오전 9시", "오전 9시 30분", "오전 10시"],
+    "answer": "오전 9시 30분"
+  },
+  {
+    "chunk": "최근 사용한 이모지 : 😂",
+    "question": "최근 사용한 이모지 : ( )",
+    "options": ["😂", "❤️", "😎"],
+    "answer": "😂"
+  },
+  {
+    "chunk": "오늘 켠 앱 수 : 23개",
+    "question": "오늘 켠 앱 수 : ( )",
+    "options": ["21개", "23개", "25개"],
+    "answer": "23개"
+  },
+  {
+    "chunk": "가장 최근 본 드라마 : 나의 해방일지",
+    "question": "가장 최근 본 드라마 : ( )",
+    "options": ["나의 해방일지", "무빙", "더 글로리"],
+    "answer": "나의 해방일지"
+  },
+  {
+    "chunk": "최근 저장한 즐겨찾기 수 : 17개",
+    "question": "최근 저장한 즐겨찾기 수 : ( )",
+    "options": ["15개", "17개", "19개"],
+    "answer": "17개"
+  },
+  {
+    "chunk": "최근 사용한 카메라 모드 : 인물",
+    "question": "최근 사용한 카메라 모드 : ( )",
+    "options": ["야경", "인물", "풍경"],
+    "answer": "인물"
+  },
+  {
+    "chunk": "이번 주 작성한 댓글 수 : 9개",
+    "question": "이번 주 작성한 댓글 수 : ( )",
+    "options": ["7개", "9개", "11개"],
+    "answer": "9개"
+  },
+  {
+    "chunk": "오늘 사용한 데이터 : 1.7GB",
+    "question": "오늘 사용한 데이터 : ( )",
+    "options": ["1.5GB", "1.7GB", "1.9GB"],
+    "answer": "1.7GB"
+  },
+  {
+    "chunk": "다음 점검 예정일 : 4월 18일",
+    "question": "다음 점검 예정일 : ( )",
+    "options": ["4월 17일", "4월 18일", "4월 19일"],
+    "answer": "4월 18일"
+  },
+  {
+    "chunk": "최근 공유한 게시물 수 : 6개",
+    "question": "최근 공유한 게시물 수 : ( )",
+    "options": ["4개", "6개", "8개"],
+    "answer": "6개"
+  },
+  {
+    "chunk": "이번 달 가장 많이 방문한 탭 : 홈",
+    "question": "이번 달 가장 많이 방문한 탭 : ( )",
+    "options": ["홈", "알림", "프로필"],
+    "answer": "홈"
+  },
+  {
+    "chunk": "최근 구입한 디지털 콘텐츠 : 이모티콘",
+    "question": "최근 구입한 디지털 콘텐츠 : ( )",
+    "options": ["이모티콘", "배경화면", "음원"],
+    "answer": "이모티콘"
+  },
+  {
+    "chunk": "최근 수정한 프로필 항목 : 닉네임",
+    "question": "최근 수정한 프로필 항목 : ( )",
+    "options": ["닉네임", "상태 메시지", "사진"],
+    "answer": "닉네임"
+  },
+  {
+    "chunk": "가장 오래 보관한 알림 수 : 14개",
+    "question": "가장 오래 보관한 알림 수 : ( )",
+    "options": ["12개", "14개", "16개"],
+    "answer": "14개"
+  },
+  {
+    "chunk": "최근 가입한 서비스 : 웰핏",
+    "question": "최근 가입한 서비스 : ( )",
+    "options": ["마이데이터", "웰핏", "헬로펫"],
+    "answer": "웰핏"
+  },
+  {
+    "chunk": "현재 구독 중인 유튜버 수 : 14명",
+    "question": "현재 구독 중인 유튜버 수 : ( )",
+    "options": ["12명", "14명", "16명"],
+    "answer": "14명"
+  },
+  {
+    "chunk": "이번 달 배달 주문 횟수 : 11회",
+    "question": "이번 달 배달 주문 횟수 : ( )",
+    "options": ["9회", "11회", "13회"],
+    "answer": "11회"
+  },
+  {
+    "chunk": "최근 저장한 음악 수 : 26곡",
+    "question": "최근 저장한 음악 수 : ( )",
+    "options": ["24곡", "26곡", "28곡"],
+    "answer": "26곡"
+  },
+  {
+    "chunk": "남은 전기차 배터리 : 62%",
+    "question": "남은 전기차 배터리 : ( )",
+    "options": ["52%", "62%", "72%"],
+    "answer": "62%"
+  },
+  {
+    "chunk": "최근 사용한 이체 기능 : 자동이체",
+    "question": "최근 사용한 이체 기능 : ( )",
+    "options": ["즉시이체", "자동이체", "예약이체"],
+    "answer": "자동이체"
+  },
+  {
+    "chunk": "가장 많이 본 쇼츠 카테고리 : 푸드",
+    "question": "가장 많이 본 쇼츠 카테고리 : ( )",
+    "options": ["푸드", "게임", "여행"],
+    "answer": "푸드"
+  },
+  {
+    "chunk": "최근 남긴 댓글 수 : 5개",
+    "question": "최근 남긴 댓글 수 : ( )",
+    "options": ["3개", "5개", "7개"],
+    "answer": "5개"
+  },
+  {
+    "chunk": "이번 주 평균 심박수 : 72bpm",
+    "question": "이번 주 평균 심박수 : ( )",
+    "options": ["68bpm", "72bpm", "76bpm"],
+    "answer": "72bpm"
+  },
+  {
+    "chunk": "최근 로그인한 기기 : 갤럭시 S22",
+    "question": "최근 로그인한 기기 : ( )",
+    "options": ["아이폰 14", "갤럭시 S22", "픽셀 7"],
+    "answer": "갤럭시 S22"
+  },
+  {
+    "chunk": "보유 중인 기프티콘 수 : 7개",
+    "question": "보유 중인 기프티콘 수 : ( )",
+    "options": ["5개", "7개", "9개"],
+    "answer": "7개"
+  },
+  {
+    "chunk": "이번 주 영상 시청 시간 : 12시간",
+    "question": "이번 주 영상 시청 시간 : ( )",
+    "options": ["10시간", "12시간", "14시간"],
+    "answer": "12시간"
+  },
+  {
+    "chunk": "가장 최근 저장한 카드 : 롯데카드",
+    "question": "가장 최근 저장한 카드 : ( )",
+    "options": ["국민카드", "롯데카드", "현대카드"],
+    "answer": "롯데카드"
+  },
+  {
+    "chunk": "현재 위치한 도시는 : 제주",
+    "question": "현재 위치한 도시는 : ( )",
+    "options": ["부산", "제주", "광주"],
+    "answer": "제주"
+  },
+  {
+    "chunk": "최근 도전한 미션 : 하루 3잔 물 마시기",
+    "question": "최근 도전한 미션 : ( )",
+    "options": ["만보 걷기", "하루 3잔 물 마시기", "야식 끊기"],
+    "answer": "하루 3잔 물 마시기"
+  },
+  {
+    "chunk": "다음 진료 예약 병원 : 서울내과",
+    "question": "다음 진료 예약 병원 : ( )",
+    "options": ["서울내과", "강남치과", "용산안과"],
+    "answer": "서울내과"
+  },
+  {
+    "chunk": "이번 주 알람 울린 횟수 : 18회",
+    "question": "이번 주 알람 울린 횟수 : ( )",
+    "options": ["16회", "18회", "20회"],
+    "answer": "18회"
+  },
+  {
+    "chunk": "최근 설정한 홈 배경 : 산호 바다",
+    "question": "최근 설정한 홈 배경 : ( )",
+    "options": ["산호 바다", "우주 은하", "도심 야경"],
+    "answer": "산호 바다"
+  },
+  {
+    "chunk": "오늘 가장 많이 쓴 앱 : 유튜브",
+    "question": "오늘 가장 많이 쓴 앱 : ( )",
+    "options": ["카카오톡", "인스타그램", "유튜브"],
+    "answer": "유튜브"
+  },
+  {
+    "chunk": "오늘 저장된 캡처 수 : 4장",
+    "question": "오늘 저장된 캡처 수 : ( )",
+    "options": ["2장", "4장", "6장"],
+    "answer": "4장"
+  },
+  {
+    "chunk": "최근 본 유튜브 채널 : 침착맨",
+    "question": "최근 본 유튜브 채널 : ( )",
+    "options": ["빠니보틀", "침착맨", "피식대학"],
+    "answer": "침착맨"
+  },
+  {
+    "chunk": "이번 주 소비한 교통비 : 19,000원",
+    "question": "이번 주 소비한 교통비 : ( )",
+    "options": ["17,000원", "19,000원", "21,000원"],
+    "answer": "19,000원"
+  },
+  {
+    "chunk": "최근 받은 뱃지 : 초심자",
+    "question": "최근 받은 뱃지 : ( )",
+    "options": ["초심자", "마스터", "탐험가"],
+    "answer": "초심자"
+  },
+  {
+    "chunk": "현재 사용 중인 폰트 : 산돌고딕",
+    "question": "현재 사용 중인 폰트 : ( )",
+    "options": ["산돌고딕", "배민체", "나눔스퀘어"],
+    "answer": "산돌고딕"
+  },
+  {
+    "chunk": "최근 공유한 노트 개수 : 6개",
+    "question": "최근 공유한 노트 개수 : ( )",
+    "options": ["4개", "6개", "8개"],
+    "answer": "6개"
+  },
+  {
+    "chunk": "가장 자주 먹는 메뉴 : 된장찌개",
+    "question": "가장 자주 먹는 메뉴 : ( )",
+    "options": ["김치찌개", "된장찌개", "불고기"],
+    "answer": "된장찌개"
+  },
+  {
+    "chunk": "최근 받은 푸시 알림 수 : 13개",
+    "question": "최근 받은 푸시 알림 수 : ( )",
+    "options": ["11개", "13개", "15개"],
+    "answer": "13개"
+  },
+  {
+    "chunk": "최근 완료한 퀘스트 : 출석 3일",
+    "question": "최근 완료한 퀘스트 : ( )",
+    "options": ["출석 2일", "출석 3일", "출석 4일"],
+    "answer": "출석 3일"
+  },
+  {
+    "chunk": "최근 연동된 계정 수 : 5개",
+    "question": "최근 연동된 계정 수 : ( )",
+    "options": ["3개", "5개", "7개"],
+    "answer": "5개"
+  },
+  {
+    "chunk": "오늘 기록된 심호흡 횟수 : 8회",
+    "question": "오늘 기록된 심호흡 횟수 : ( )",
+    "options": ["6회", "8회", "10회"],
+    "answer": "8회"
+  },
+  {
+    "chunk": "최근 시청한 강의 : UX 기초",
+    "question": "최근 시청한 강의 : ( )",
+    "options": ["UI 기초", "UX 기초", "서비스 기획"],
+    "answer": "UX 기초"
+  },
+  {
+    "chunk": "최근 스캔한 QR 수 : 3개",
+    "question": "최근 스캔한 QR 수 : ( )",
+    "options": ["2개", "3개", "4개"],
+    "answer": "3개"
+  },
+  {
+    "chunk": "저장된 Wi-Fi 네트워크 수 : 12개",
+    "question": "저장된 Wi-Fi 네트워크 수 : ( )",
+    "options": ["10개", "12개", "14개"],
+    "answer": "12개"
+  },
+  {
+    "chunk": "오늘 완료한 할 일 : 7개",
+    "question": "오늘 완료한 할 일 : ( )",
+    "options": ["5개", "7개", "9개"],
+    "answer": "7개"
+  },
+  {
+    "chunk": "최근 사용한 음성 명령어 : 타이머 시작",
+    "question": "최근 사용한 음성 명령어 : ( )",
+    "options": ["날씨 알려줘", "타이머 시작", "음악 틀어줘"],
+    "answer": "타이머 시작"
+  },
+  {
+    "chunk": "오늘 소비한 데이터 : 1.2GB",
+    "question": "오늘 소비한 데이터 : ( )",
+    "options": ["1.0GB", "1.2GB", "1.4GB"],
+    "answer": "1.2GB"
+  },
+  {
+    "chunk": "최근 캘린더 일정 추가 수 : 4건",
+    "question": "최근 캘린더 일정 추가 수 : ( )",
+    "options": ["3건", "4건", "5건"],
+    "answer": "4건"
+  },
+  {
+    "chunk": "현재 연속 출석 일수 : 15일",
+    "question": "현재 연속 출석 일수 : ( )",
+    "options": ["13일", "15일", "17일"],
+    "answer": "15일"
+  },
+  {
+    "chunk": "오늘 작성한 메모 수 : 9개",
+    "question": "오늘 작성한 메모 수 : ( )",
+    "options": ["7개", "9개", "11개"],
+    "answer": "9개"
+  },
+  {
+    "chunk": "최근 앱 실행 횟수 : 22회",
+    "question": "최근 앱 실행 횟수 : ( )",
+    "options": ["20회", "22회", "24회"],
+    "answer": "22회"
+  },
+  {
+    "chunk": "최근 등록한 알람 시간 : 오전 7시",
+    "question": "최근 등록한 알람 시간 : ( )",
+    "options": ["오전 6시 30분", "오전 7시", "오전 7시 30분"],
+    "answer": "오전 7시"
+  },
+  {
+    "chunk": "최근 좋아요한 글 수 : 34개",
+    "question": "최근 좋아요한 글 수 : ( )",
+    "options": ["32개", "34개", "36개"],
+    "answer": "34개"
+  },
+  {
+    "chunk": "최근 공유된 링크 수 : 3개",
+    "question": "최근 공유된 링크 수 : ( )",
+    "options": ["2개", "3개", "4개"],
+    "answer": "3개"
+  },
+  {
+    "chunk": "최근 캘린더 일정 알림 : 회의",
+    "question": "최근 캘린더 일정 알림 : ( )",
+    "options": ["회의", "운동", "병원"],
+    "answer": "회의"
+  },
+  {
+    "chunk": "오늘 측정한 체온 : 36.5℃",
+    "question": "오늘 측정한 체온 : ( )",
+    "options": ["36.3℃", "36.5℃", "36.7℃"],
+    "answer": "36.5℃"
+  },
+  {
+    "chunk": "최근 사용한 QR 결제 앱 : 토스",
+    "question": "최근 사용한 QR 결제 앱 : ( )",
+    "options": ["토스", "페이코", "카카오페이"],
+    "answer": "토스"
+  },
+  {
+    "chunk": "오늘 완료한 챌린지 수 : 2개",
+    "question": "오늘 완료한 챌린지 수 : ( )",
+    "options": ["1개", "2개", "3개"],
+    "answer": "2개"
+  },
+  {
+    "chunk": "오늘 마신 커피 : 2잔",
+    "question": "오늘 마신 커피 : ( )",
+    "options": ["1잔", "2잔", "3잔"],
+    "answer": "2잔"
+  },
+  {
+    "chunk": "최근 검색한 브랜드 : 뉴발란스",
+    "question": "최근 검색한 브랜드 : ( )",
+    "options": ["아디다스", "뉴발란스", "컨버스"],
+    "answer": "뉴발란스"
+  },
+  {
+    "chunk": "이번 주 운동 시간 : 4시간 30분",
+    "question": "이번 주 운동 시간 : ( )",
+    "options": ["3시간 30분", "4시간 30분", "5시간 30분"],
+    "answer": "4시간 30분"
+  },
+  {
+    "chunk": "보유 중인 적립금 : 7,000원",
+    "question": "보유 중인 적립금 : ( )",
+    "options": ["5,000원", "7,000원", "9,000원"],
+    "answer": "7,000원"
+  },
+  {
+    "chunk": "다음 피트니스 예약 : 오전 11시",
+    "question": "다음 피트니스 예약 : ( )",
+    "options": ["오전 10시", "오전 11시", "오전 12시"],
+    "answer": "오전 11시"
+  },
+  {
+    "chunk": "최근 저장한 주소 : 서울 마포구",
+    "question": "최근 저장한 주소 : ( )",
+    "options": ["서울 강남구", "서울 마포구", "서울 종로구"],
+    "answer": "서울 마포구"
+  },
+  {
+    "chunk": "이번 달 누적 스트레칭 일수 : 15일",
+    "question": "이번 달 누적 스트레칭 일수 : ( )",
+    "options": ["13일", "15일", "17일"],
+    "answer": "15일"
+  },
+  {
+    "chunk": "최근 결제한 카페 : 테라로사",
+    "question": "최근 결제한 카페 : ( )",
+    "options": ["커피빈", "테라로사", "할리스"],
+    "answer": "테라로사"
+  },
+  {
+    "chunk": "오늘 남은 공부 시간 : 2시간",
+    "question": "오늘 남은 공부 시간 : ( )",
+    "options": ["1시간", "2시간", "3시간"],
+    "answer": "2시간"
+  },
+  {
+    "chunk": "최근 시청한 예능 : 놀면 뭐하니",
+    "question": "최근 시청한 예능 : ( )",
+    "options": ["유 퀴즈", "놀면 뭐하니", "런닝맨"],
+    "answer": "놀면 뭐하니"
+  },
+  {
+    "chunk": "오늘 생성한 작업 수 : 6개",
+    "question": "오늘 생성한 작업 수 : ( )",
+    "options": ["4개", "6개", "8개"],
+    "answer": "6개"
+  },
+  {
+    "chunk": "가장 자주 가는 마트 : 이마트",
+    "question": "가장 자주 가는 마트 : ( )",
+    "options": ["홈플러스", "이마트", "롯데마트"],
+    "answer": "이마트"
+  },
+  {
+    "chunk": "최근 등록한 장바구니 항목 : 아보카도",
+    "question": "최근 등록한 장바구니 항목 : ( )",
+    "options": ["토마토", "아보카도", "오렌지"],
+    "answer": "아보카도"
+  },
+  {
+    "chunk": "현재 소모된 데이터 : 3.4GB",
+    "question": "현재 소모된 데이터 : ( )",
+    "options": ["2.4GB", "3.4GB", "4.4GB"],
+    "answer": "3.4GB"
+  },
+  {
+    "chunk": "가장 최근 읽은 책 : 미드나잇 라이브러리",
+    "question": "가장 최근 읽은 책 : ( )",
+    "options": ["달러구트 꿈 백화점", "미드나잇 라이브러리", "불편한 편의점"],
+    "answer": "미드나잇 라이브러리"
+  },
+  {
+    "chunk": "오늘 소모한 탄수화물 : 180g",
+    "question": "오늘 소모한 탄수화물 : ( )",
+    "options": ["160g", "180g", "200g"],
+    "answer": "180g"
+  },
+  {
+    "chunk": "최근 다운로드한 앱 : 트레바리",
+    "question": "최근 다운로드한 앱 : ( )",
+    "options": ["트레바리", "클래스101", "윌라"],
+    "answer": "트레바리"
+  },
+  {
+    "chunk": "최근 도착한 알림 시간 : 오후 5시 10분",
+    "question": "최근 도착한 알림 시간 : ( )",
+    "options": ["오후 5시", "오후 5시 10분", "오후 5시 20분"],
+    "answer": "오후 5시 10분"
+  },
+  {
+    "chunk": "최근 작성한 후기 개수 : 2개",
+    "question": "최근 작성한 후기 개수 : ( )",
+    "options": ["1개", "2개", "3개"],
+    "answer": "2개"
+  },
+  {
+    "chunk": "다음 배송 업체 : CJ대한통운",
+    "question": "다음 배송 업체 : ( )",
+    "options": ["우체국", "CJ대한통운", "한진택배"],
+    "answer": "CJ대한통운"
+  },
+  {
+    "chunk": "오늘 일어난 시간 : 오전 7시 15분",
+    "question": "오늘 일어난 시간 : ( )",
+    "options": ["오전 6시 45분", "오전 7시 15분", "오전 7시 45분"],
+    "answer": "오전 7시 15분"
+  },
+  {
+    "chunk": "최근 친구 추가 수 : 5명",
+    "question": "최근 친구 추가 수 : ( )",
+    "options": ["3명", "5명", "7명"],
+    "answer": "5명"
+  },
+  {
+    "chunk": "최근 저장한 배경화면 : 바다",
+    "question": "최근 저장한 배경화면 : ( )",
+    "options": ["숲", "바다", "우주"],
+    "answer": "바다"
+  },
+  {
+    "chunk": "현재 활성화된 알람 수 : 4개",
+    "question": "현재 활성화된 알람 수 : ( )",
+    "options": ["2개", "4개", "6개"],
+    "answer": "4개"
+  },
+  {
+    "chunk": "최근 도착한 메시지 앱 : 텔레그램",
+    "question": "최근 도착한 메시지 앱 : ( )",
+    "options": ["카카오톡", "텔레그램", "라인"],
+    "answer": "텔레그램"
+  },
+  {
+    "chunk": "오늘 추가한 캘린더 일정 : 3건",
+    "question": "오늘 추가한 캘린더 일정 : ( )",
+    "options": ["2건", "3건", "4건"],
+    "answer": "3건"
+  },
+  {
+    "chunk": "최근 사용한 결제 방식 : 페이코",
+    "question": "최근 사용한 결제 방식 : ( )",
+    "options": ["네이버페이", "페이코", "삼성페이"],
+    "answer": "페이코"
+  },
+  {
+    "chunk": "최근 받은 친구 요청 수 : 4건",
+    "question": "최근 받은 친구 요청 수 : ( )",
+    "options": ["2건", "4건", "6건"],
+    "answer": "4건"
+  },
+  {
+    "chunk": "최근 측정한 혈압 : 118/76",
+    "question": "최근 측정한 혈압 : ( )",
+    "options": ["112/70", "118/76", "124/80"],
+    "answer": "118/76"
+  },
+  {
+    "chunk": "이번 주 목표 달성률 : 85%",
+    "question": "이번 주 목표 달성률 : ( )",
+    "options": ["75%", "85%", "95%"],
+    "answer": "85%"
   }
-];
+
+    ];
 
     // 전역 상태 변수들
     let usableData = [];       // 사용 가능한 세트 (라운드마다 chunkCount개씩 사용, 나머지는 버림)
@@ -276,7 +1279,7 @@
     let experimentResults = []; // 각 라운드별 결과: { total, score }
     let testerName = "";
     let chunkCount = 0;
-    let totalRounds = 0;
+    const totalRounds = 30;    // 총 30번의 라운드 진행 (10회씩 3블록)
     let currentQuizSets = [];  // 현재 라운드에서 랜덤 순서로 섞인 세트 배열
 
     let readingTimer; // 읽기 단계 타이머
@@ -286,8 +1289,7 @@
     const restartButton = document.getElementById("restartButton");
     const downloadCSVButton = document.getElementById("downloadCSV");
     const nameInput = document.getElementById("testerName");
-    const chunkInput = document.getElementById("chunkCount");
-    const experimentInput = document.getElementById("experimentCount");
+    const chunkSelect = document.getElementById("chunkCount");
     const instructionsDiv = document.getElementById("instructions");
     const experimentArea = document.getElementById("experimentArea");
     const displayPanel = document.getElementById("displayPanel");
@@ -305,15 +1307,8 @@
         alert("테스터 이름을 입력해주세요.");
         return;
       }
-      chunkCount = parseInt(chunkInput.value);
-      let userExpCount = parseInt(experimentInput.value);
-      // 전체 라운드 수: rawData에서 청크 개수로 나눈 몫
-      totalRounds = Math.floor(rawData.length / chunkCount);
-      // 만약 사용자가 입력한 실험 횟수가 totalRounds보다 작으면 그만큼만 진행
-      if(userExpCount < totalRounds) {
-        totalRounds = userExpCount;
-      }
-      // 사용 가능한 세트는 totalRounds * chunkCount개만 사용 (나머지는 버림)
+      chunkCount = parseInt(chunkSelect.value);
+      // usableData에 totalRounds * chunkCount 만큼의 데이터 필요 (실제 rawData가 충분해야 함)
       usableData = rawData.slice(0, totalRounds * chunkCount);
       currentSetIndex = 0;
       experimentResults = [];
@@ -428,14 +1423,32 @@
         score: roundScore
       });
       
-      // 다음 라운드 진행
       currentSetIndex += chunkCount;
-      if (currentSetIndex < usableData.length) {
+      let roundsCompleted = currentSetIndex / chunkCount;
+      if (roundsCompleted % 10 === 0 && roundsCompleted < totalRounds) {
+        showRestScreen();
+      } else if (currentSetIndex < usableData.length) {
         setTimeout(startRound, 500);
       } else {
         experimentArea.style.display = "none";
         showResultsTable();
       }
+    }
+
+    // 휴식 화면 표시 함수
+    function showRestScreen() {
+      displayPanel.innerHTML = "<h2 style='text-align:center; margin-top:50%; transform: translateY(-50%);'>휴식 시간입니다!</h2>";
+      quizPanel.innerHTML = "";
+      
+      const continueContainer = document.createElement("div");
+      continueContainer.className = "centerButton";
+      const continueButton = document.createElement("button");
+      continueButton.textContent = "계속하기";
+      continueButton.addEventListener("click", () => {
+        startRound();
+      });
+      continueContainer.appendChild(continueButton);
+      quizPanel.appendChild(continueContainer);
     }
 
     // 최종 결과를 표로 표시하는 함수
@@ -484,8 +1497,7 @@
       experimentArea.style.display = "none";
       resultsArea.style.display = "none";
       nameInput.value = "";
-      chunkInput.value = "2";
-      experimentInput.value = "2";
+      chunkSelect.value = "2";
     }
 
     // Fisher-Yates 셔플 알고리즘 (배열 복사 후 섞기)
