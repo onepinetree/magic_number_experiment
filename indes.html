@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>매직넘버 실험 웹사이트</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 0; 
+      padding: 0; 
+      background: #f8f8f8; 
+    }
+    header { 
+      background: #333; 
+      color: white; 
+      padding: 10px; 
+      text-align: center; 
+    }
+    .section { 
+      padding: 20px; 
+    }
+    .settings { 
+      margin-bottom: 20px; 
+    }
+    .settings label { 
+      margin-right: 10px; 
+    }
+    .container { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 20px; 
+      justify-content: center; 
+    }
+    
+    /* 아이폰 UI 스타일 (왼쪽 패널) - 85% 크기로 축소 */
+    #displayPanel {
+      width: 319px;       /* 375px * 0.85 */
+      height: 567px;      /* 667px * 0.85 */
+      border: 14px solid #333;  /* 16px * 0.85 ≒ 14px */
+      border-top-width: 34px;     /* 40px * 0.85 ≒ 34px */
+      border-bottom-width: 34px;
+      border-radius: 31px;        /* 36px * 0.85 ≒ 31px */
+      background: #fff;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      overflow: hidden;
+      position: relative;
+    }
+    /* 오른쪽 패널 (퀴즈 영역) 기본 스타일 */
+    #quizPanel {
+      flex: 1;
+      min-width: 300px;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+    
+    /* 모든 버튼: 검은색 배경, 흰색 글씨 */
+    button {
+      background-color: black;
+      color: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      cursor: pointer;
+    }
+    /* 중앙 정렬을 위한 컨테이너 */
+    .centerButton {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+    .centerButton button {
+      width: 50%;
+    }
+    
+    table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin-top: 20px; 
+    }
+    th, td { 
+      border: 1px solid #ccc; 
+      padding: 8px; 
+      text-align: center; 
+    }
+    th { 
+      background: #f0f0f0; 
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>매직넘버 실험</h1>
+  </header>
+
+  <!-- 실험 설명 및 설정 영역 -->
+  <div id="instructions" class="section">
+    <h2>실험 진행 방식 안내</h2>
+    <p style="font-size: 18px; font-weight: bold; color: darkred;">
+      ⚠️ 이 실험은 작업기억(working memory)을 측정하는 실험입니다. <u>한 번 보고 즉시 기억을 바탕으로 퀴즈</u>에 답해야 합니다!
+    </p>
+    <p>
+      실험은 다음과 같은 방식으로 진행됩니다:<br>
+      1. 상단에서 테스터의 이름, 청크 개수(한 라운드에 보여질 세트 수), 전체 실험 횟수를 선택합니다.<br>
+      2. 각 라운드는 왼쪽 패널(아이폰 화면처럼 디자인됨)에 해당 라운드의 청크(예: "청크 1: …", "청크 2: …")를 읽기 단계로 노출합니다.<br>
+      3. 오른쪽 패널에는 중앙에 "읽음, 퀴즈 시작" 버튼이 나타나며, 버튼을 누르거나 15초 후 자동으로 해당 청크에 대한 문제들이 제시됩니다.<br>
+      4. 각 문제는 객관식으로 제시되며, 15초 이내에 답변하지 않으면 자동으로 제출됩니다.<br>
+      5. 모든 라운드가 종료되면 각 라운드별 결과(총 청크 수 / 점수(%) / 테스터 이름)를 표 형식으로 확인할 수 있고, CSV로 저장할 수 있습니다.<br>
+    </p>
+    <div class="settings">
+      <label for="testerName">테스터 이름:</label>
+      <input type="text" id="testerName" placeholder="이름을 입력하세요">
+      <br><br>
+      <label for="chunkCount">청크 개수:</label>
+      <input type="number" id="chunkCount" min="1" value="2">
+      <label for="experimentCount">실험 횟수:</label>
+      <input type="number" id="experimentCount" min="1" value="2">
+    </div>
+    <button id="startExperiment">실험 시작</button>
+  </div>
+
+  <!-- 실험 진행 영역 (실험 중일 때 보임) -->
+  <div id="experimentArea" class="section" style="display:none;">
+    <div class="container">
+      <div id="displayPanel">
+        <!-- 왼쪽 패널: 읽기 단계에서 청크들을 표시 -->
+      </div>
+      <div id="quizPanel">
+        <!-- 오른쪽 패널: 읽기 단계에서는 "읽음, 퀴즈 시작" 버튼, 퀴즈 단계에서는 문제들을 표시 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 최종 결과 표시 영역 -->
+  <div id="resultsArea" class="section" style="display:none;">
+    <h2>실험 결과</h2>
+    <div id="resultsTable"></div>
+    <br>
+    <button id="downloadCSV">CSV 저장</button>
+    <br><br>
+    <button id="restartButton">다시하기</button>
+  </div>
+
+  <script>
+    // raw_data를 객체 배열로 정의 (순서는 항상 동일)
+    const rawData = 
+    [
+  {
+    "chunk": "오늘 남은 할 일 : 3개",
+    "question": "오늘 남은 할 일 : ( )",
+    "options": ["2개", "3개", "4개"],
+    "answer": "3개"
+  },
+  {
+    "chunk": "이번 달 총 걸음 수 : 84,000보",
+    "question": "이번 달 총 걸음 수 : ( )",
+    "options": ["64,000보", "84,000보", "104,000보"],
+    "answer": "84,000보"
+  },
+  {
+    "chunk": "최근 배송 상태 : 배송 완료",
+    "question": "최근 배송 상태 : ( )",
+    "options": ["배송 중", "배송 완료", "배송 준비"],
+    "answer": "배송 완료"
+  },
+  {
+    "chunk": "현재 잔액 : 12만 5천원",
+    "question": "현재 잔액 : ( )",
+    "options": ["11만 5천원", "12만 5천원", "13만 5천원"],
+    "answer": "12만 5천원"
+  },
+  {
+    "chunk": "다음 운동 : 요가",
+    "question": "다음 운동 : ( )",
+    "options": ["요가", "필라테스", "웨이트"],
+    "answer": "요가"
+  },
+  {
+    "chunk": "이번 주 소비 1위 카테고리 : 외식",
+    "question": "이번 주 소비 1위 카테고리 : ( )",
+    "options": ["의류", "외식", "교통"],
+    "answer": "외식"
+  },
+  {
+    "chunk": "예약된 병원 : 서울정형외과",
+    "question": "예약된 병원 : ( )",
+    "options": ["서울정형외과", "강남내과", "신촌피부과"],
+    "answer": "서울정형외과"
+  },
+  {
+    "chunk": "오늘 섭취한 단백질 : 72g",
+    "question": "오늘 섭취한 단백질 : ( )",
+    "options": ["52g", "72g", "92g"],
+    "answer": "72g"
+  },
+  {
+    "chunk": "가장 많이 쓴 브랜드 : 스타벅스",
+    "question": "가장 많이 쓴 브랜드 : ( )",
+    "options": ["스타벅스", "배달의민족", "쿠팡"],
+    "answer": "스타벅스"
+  },
+  {
+    "chunk": "최근 검색한 항공사 : 대한항공",
+    "question": "최근 검색한 항공사 : ( )",
+    "options": ["대한항공", "아시아나", "제주항공"],
+    "answer": "대한항공"
+  },
+  {
+    "chunk": "다음 약 복용 시간 : 오후 7시",
+    "question": "다음 약 복용 시간 : ( )",
+    "options": ["오후 6시", "오후 7시", "오후 8시"],
+    "answer": "오후 7시"
+  },
+  {
+    "chunk": "이번 주 최다 청취 앨범 : 뉴진스",
+    "question": "이번 주 최다 청취 앨범 : ( )",
+    "options": ["뉴진스", "르세라핌", "아이브"],
+    "answer": "뉴진스"
+  },
+  {
+    "chunk": "최근 본 뉴스 : 테슬라",
+    "question": "최근 본 뉴스 : ( )",
+    "options": ["애플", "테슬라", "삼성"],
+    "answer": "테슬라"
+  },
+  {
+    "chunk": "오늘 남은 물 섭취량 : 900ml",
+    "question": "오늘 남은 물 섭취량 : ( )",
+    "options": ["700ml", "900ml", "1100ml"],
+    "answer": "900ml"
+  },
+  {
+    "chunk": "다음 운동 예약 : 오후 8시",
+    "question": "다음 운동 예약 : ( )",
+    "options": ["오후 7시", "오후 8시", "오후 9시"],
+    "answer": "오후 8시"
+  },
+  {
+    "chunk": "최다 소비일 : 4월 3일",
+    "question": "최다 소비일 : ( )",
+    "options": ["4월 3일", "4월 7일", "4월 10일"],
+    "answer": "4월 3일"
+  },
+  {
+    "chunk": "가장 많이 사용한 앱 : 인스타그램",
+    "question": "가장 많이 사용한 앱 : ( )",
+    "options": ["인스타그램", "유튜브", "카카오톡"],
+    "answer": "인스타그램"
+  },
+  {
+    "chunk": "최근 도착한 택시 차량 : 모닝",
+    "question": "최근 도착한 택시 차량 : ( )",
+    "options": ["모닝", "쏘나타", "K7"],
+    "answer": "모닝"
+  },
+  {
+    "chunk": "최근 작성한 리뷰 점수 : 4점",
+    "question": "최근 작성한 리뷰 점수 : ( )",
+    "options": ["3점", "4점", "5점"],
+    "answer": "4점"
+  },
+  {
+    "chunk": "활성화된 알림 수 : 5개",
+    "question": "활성화된 알림 수 : ( )",
+    "options": ["3개", "5개", "7개"],
+    "answer": "5개"
+  }
+];
+
+    // 전역 상태 변수들
+    let usableData = [];       // 사용 가능한 세트 (라운드마다 chunkCount개씩 사용, 나머지는 버림)
+    let currentSetIndex = 0;   // 현재 진행중인 세트 인덱스 (usableData 내)
+    let experimentResults = []; // 각 라운드별 결과: { total, score }
+    let testerName = "";
+    let chunkCount = 0;
+    let totalRounds = 0;
+    let currentQuizSets = [];  // 현재 라운드에서 랜덤 순서로 섞인 세트 배열
+
+    let readingTimer; // 읽기 단계 타이머
+    let quizTimer;    // 퀴즈 단계 타이머
+
+    const startButton = document.getElementById("startExperiment");
+    const restartButton = document.getElementById("restartButton");
+    const downloadCSVButton = document.getElementById("downloadCSV");
+    const nameInput = document.getElementById("testerName");
+    const chunkInput = document.getElementById("chunkCount");
+    const experimentInput = document.getElementById("experimentCount");
+    const instructionsDiv = document.getElementById("instructions");
+    const experimentArea = document.getElementById("experimentArea");
+    const displayPanel = document.getElementById("displayPanel");
+    const quizPanel = document.getElementById("quizPanel");
+    const resultsArea = document.getElementById("resultsArea");
+    const resultsTableDiv = document.getElementById("resultsTable");
+
+    startButton.addEventListener("click", startExperiment);
+    restartButton.addEventListener("click", restartExperiment);
+    downloadCSVButton.addEventListener("click", downloadCSV);
+
+    function startExperiment() {
+      testerName = nameInput.value.trim();
+      if (!testerName) {
+        alert("테스터 이름을 입력해주세요.");
+        return;
+      }
+      chunkCount = parseInt(chunkInput.value);
+      let userExpCount = parseInt(experimentInput.value);
+      // 전체 라운드 수: rawData에서 청크 개수로 나눈 몫
+      totalRounds = Math.floor(rawData.length / chunkCount);
+      // 만약 사용자가 입력한 실험 횟수가 totalRounds보다 작으면 그만큼만 진행
+      if(userExpCount < totalRounds) {
+        totalRounds = userExpCount;
+      }
+      // 사용 가능한 세트는 totalRounds * chunkCount개만 사용 (나머지는 버림)
+      usableData = rawData.slice(0, totalRounds * chunkCount);
+      currentSetIndex = 0;
+      experimentResults = [];
+      instructionsDiv.style.display = "none";
+      resultsArea.style.display = "none";
+      experimentArea.style.display = "block";
+      startRound();
+    }
+
+    // 한 라운드(청크 읽기 단계)를 시작하는 함수
+    function startRound() {
+      displayPanel.innerHTML = "";
+      quizPanel.innerHTML = "";
+      // 현재 라운드에 해당하는 세트 배열 추출
+      let roundSets = usableData.slice(currentSetIndex, currentSetIndex + chunkCount);
+      
+      // 왼쪽 패널에 각 세트의 청크 내용을 표시 (순서는 그대로 유지)
+      roundSets.forEach((set, idx) => {
+        const p = document.createElement("p");
+        p.textContent = set.chunk;
+        displayPanel.appendChild(p);
+      });
+      
+      // 오른쪽 패널에 "읽음, 퀴즈 시작" 버튼 중앙 배치
+      quizPanel.innerHTML = "";
+      const buttonContainer = document.createElement("div");
+      buttonContainer.className = "centerButton";
+      const startQuizButton = document.createElement("button");
+      startQuizButton.textContent = "읽음, 퀴즈 시작";
+      startQuizButton.addEventListener("click", () => {
+        clearTimeout(readingTimer);
+        showQuiz();
+      });
+      buttonContainer.appendChild(startQuizButton);
+      quizPanel.appendChild(buttonContainer);
+      
+      // 15초 후 자동으로 퀴즈 단계로 전환
+      readingTimer = setTimeout(showQuiz, 15000);
+    }
+
+    // 퀴즈 단계를 표시하는 함수 (문제 순서를 랜덤으로 섞음)
+    function showQuiz() {
+      clearTimeout(readingTimer);
+      // 왼쪽 패널은 "퀴즈 진행 중..." 메시지로 대체
+      displayPanel.innerHTML = "<h3 style='text-align:center; margin-top:50%; transform: translateY(-50%);'>퀴즈 진행 중...</h3>";
+      quizPanel.innerHTML = "";
+      
+      // 현재 라운드의 세트 배열을 랜덤 순서로 섞어서 저장
+      let roundSets = usableData.slice(currentSetIndex, currentSetIndex + chunkCount);
+      currentQuizSets = shuffleArray(roundSets);
+      
+      // 랜덤 순서의 currentQuizSets를 기준으로 문제와 옵션을 표시
+      currentQuizSets.forEach((set, idx) => {
+        const container = document.createElement("div");
+        container.style.marginBottom = "20px";
+        // 문제 텍스트 표시
+        const questionP = document.createElement("p");
+        questionP.textContent = "문제 " + (currentSetIndex + idx + 1) + ": " + set.question;
+        container.appendChild(questionP);
+        // 옵션들을 랜덤 순서로 섞어서 표시 (옵션 내부 섞기는 각 문제마다)
+        const shuffledOptions = shuffleArray(set.options);
+        shuffledOptions.forEach(option => {
+          const label = document.createElement("label");
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = "question" + idx;
+          radio.value = option;
+          label.appendChild(radio);
+          label.appendChild(document.createTextNode(option));
+          container.appendChild(label);
+          container.appendChild(document.createElement("br"));
+        });
+        quizPanel.appendChild(container);
+      });
+      
+      // 오른쪽 패널 하단에 제출 버튼 중앙 배치
+      const submitContainer = document.createElement("div");
+      submitContainer.className = "centerButton";
+      const submitButton = document.createElement("button");
+      submitButton.textContent = "제출";
+      submitButton.addEventListener("click", () => {
+        clearTimeout(quizTimer);
+        evaluateQuiz();
+      });
+      submitContainer.appendChild(submitButton);
+      quizPanel.appendChild(submitContainer);
+      
+      // 15초 후 자동 제출
+      quizTimer = setTimeout(evaluateQuiz, 15000);
+    }
+
+    // 제출 후 각 문제의 정답을 평가하는 함수 (랜덤 순서인 currentQuizSets 기준)
+    function evaluateQuiz() {
+      clearTimeout(quizTimer);
+      let roundScore = 0;
+      currentQuizSets.forEach((set, idx) => {
+        const radios = document.getElementsByName("question" + idx);
+        let selected = "";
+        for (let radio of radios) {
+          if (radio.checked) {
+            selected = radio.value;
+            break;
+          }
+        }
+        if (selected === set.answer) {
+          roundScore++;
+        }
+      });
+      // 라운드 결과 저장
+      experimentResults.push({
+        total: chunkCount,
+        score: roundScore
+      });
+      
+      // 다음 라운드 진행
+      currentSetIndex += chunkCount;
+      if (currentSetIndex < usableData.length) {
+        setTimeout(startRound, 500);
+      } else {
+        experimentArea.style.display = "none";
+        showResultsTable();
+      }
+    }
+
+    // 최종 결과를 표로 표시하는 함수
+    function showResultsTable() {
+      resultsArea.style.display = "block";
+      let tableHTML = `<table>
+                        <tr>
+                          <th>총 청크 수</th>
+                          <th>점수(%)</th>
+                          <th>테스터 이름</th>
+                        </tr>`;
+      experimentResults.forEach(result => {
+        let percentage = ((result.score / result.total) * 100).toFixed(2);
+        tableHTML += `<tr>
+                        <td>${result.total}</td>
+                        <td>${percentage}%</td>
+                        <td>${testerName}</td>
+                      </tr>`;
+      });
+      tableHTML += `</table>`;
+      resultsTableDiv.innerHTML = tableHTML;
+    }
+
+    // CSV 저장 기능: 최종 결과를 CSV 파일로 다운로드
+    function downloadCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "총 청크 수,점수(%),테스터 이름\n";
+      experimentResults.forEach(result => {
+        let percentage = ((result.score / result.total) * 100).toFixed(2);
+        csvContent += `${result.total},${percentage},${testerName}\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "experiment_results.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // "다시하기" 버튼: 상태 초기화 후 설정 화면으로 복귀
+    function restartExperiment() {
+      testerName = "";
+      experimentResults = [];
+      instructionsDiv.style.display = "block";
+      experimentArea.style.display = "none";
+      resultsArea.style.display = "none";
+      nameInput.value = "";
+      chunkInput.value = "2";
+      experimentInput.value = "2";
+    }
+
+    // Fisher-Yates 셔플 알고리즘 (배열 복사 후 섞기)
+    function shuffleArray(array) {
+      const arr = array.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+  </script>
+</body>
+</html>
